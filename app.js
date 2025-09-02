@@ -38,6 +38,16 @@ const addImageWatermarkToImage = async function (inputFile, outputFile, watermar
    
 };
 
+const makeImageBrighter = async function (inputFile, outputFile, brightnessLevel) {
+    try {
+        const image = await Jimp.read(inputFile);
+        image.brightness(brightnessLevel);
+        await image.quality(100).writeAsync(outputFile);
+    } catch(error) {
+        console.log('Something went terribly wrong... Try again if you dare!');
+    }
+}
+
 //addImageWatermarkToImage('./test.jpg', './test-with-watermark2.jpg', './logo.png');
 
 const prepareOutputFilename = function(name) {
@@ -63,7 +73,7 @@ const startApp = async () => {
     }, {
         name: 'watermarkType',
         type: 'list',
-        choices: ['Text watermark', 'Image watermark'],
+        choices: ['Text watermark', 'Image watermark', 'Make Image Brighter'],
     }
     ])
     if(options.watermarkType === 'Text watermark') {
@@ -81,7 +91,7 @@ const startApp = async () => {
         }
         
     }
-    else {
+    else if (options.watermarkType === 'Image watermark') {
         const image = await inquirer.prompt([{
             name: 'filename',
             type: 'input',
@@ -93,6 +103,20 @@ const startApp = async () => {
             addImageWatermarkToImage('./img/' + options.inputImage, prepareOutputFilename(options.watermarkImage), './img/' + options.watermarkImage);
         } else {
             console.log('Something went wrong... Try again.')
+        }
+    }
+    else if (options.watermarkType === 'Make Image Brighter') {
+        console.log('Brighter!');
+        const image = await inquirer.prompt([{
+            name: 'filename',
+            type: 'input',
+            default: 'logo.png'
+        }]);
+        options.brighterImage = image.filename;
+        if(fs.existsSync('./img/'+options.brighterImage)) {
+            makeImageBrighter('./img/' + options.inputImage, prepareOutputFilename(options.brighterImage), 0.2);
+        } else {
+            console.log('Something went wrong... Try again.');
         }
     }
 }
